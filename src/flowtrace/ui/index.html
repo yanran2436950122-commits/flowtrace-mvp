@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FlowTrace MVP</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>FlowTrace</strong>
+        <span>MVP 运行观测台</span>
+      </div>
+      <button id="refreshRuns" class="refresh">刷新运行记录</button>
+      <div id="runs" class="runs"></div>
+    </aside>
+
+    <main class="workspace">
+      <section class="topbar">
+        <div>
+          <h1 id="runTitle">尚未选择运行记录</h1>
+          <p id="runMeta">运行示例工作流后刷新页面。</p>
+          <div id="runSummary" class="run-summary"></div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="graph-panel">
+          <div class="panel-heading">
+            <h2>运行视图</h2>
+            <div id="viewTabs" class="view-tabs"></div>
+          </div>
+          <div id="graph" class="graph empty">暂无事件。</div>
+        </div>
+        <aside class="right-rail">
+          <section class="watch-panel">
+            <div class="panel-heading compact">
+              <h2>监视窗口</h2>
+              <span id="watchStatus">拖入方法以固定监视</span>
+            </div>
+            <div id="watchList" class="watch-list"></div>
+          </section>
+          <section class="detail-panel">
+            <h2>事件详情</h2>
+            <div id="details">{}</div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

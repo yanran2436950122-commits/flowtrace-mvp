@@ -1,0 +1,13 @@
+[project]
+name = "flowtrace-mvp"
+version = "0.1.0"
+description = "Event-first parameter-flow debugging MVP"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

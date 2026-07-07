@@ -1,0 +1,6 @@
+[project]
+name = "inventory-cli-sample"
+version = "0.1.0"
+description = "FlowTrace realistic inventory CLI sample"
+requires-python = ">=3.11"
+

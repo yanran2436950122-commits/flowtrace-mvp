@@ -1,0 +1,6 @@
+[project]
+name = "support-ticket-sample"
+version = "0.1.0"
+description = "FlowTrace realistic async support ticket sample"
+requires-python = ">=3.11"
+

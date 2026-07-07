@@ -1,0 +1,105 @@
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ==========================
+# Virtual Environment
+# ==========================
+.venv/
+venv/
+env/
+ENV/
+
+# ==========================
+# Build
+# ==========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ==========================
+# IDE
+# ==========================
+.idea/
+.vscode/
+*.iml
+
+# ==========================
+# Operating System
+# ==========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================
+# Logs
+# ==========================
+logs/
+*.log
+*.out
+*.err
+
+# ==========================
+# Runtime / Cache
+# ==========================
+.flowtrace/
+output/
+tmp/
+temp/
+.cache/
+
+# ==========================
+# Python Cache
+# ==========================
+*.pyc
+*.pyo
+
+# ==========================
+# Playwright
+# ==========================
+.playwright-cli/
+playwright-report/
+test-results/
+
+# ==========================
+# Node
+# ==========================
+node_modules/
+
+# ==========================
+# Environment
+# ==========================
+.env
+.env.*
+!.env.example
+
+# ==========================
+# Local configuration
+# ==========================
+*.local
+*.tmp
+*.bak
+
+# ==========================
+# JetBrains
+# ==========================
+.idea_modules/
+
+# ==========================
+# Generated Reports
+# (根据需要保留)
+# ==========================
+reports/
+runtime/
+.tmp_*

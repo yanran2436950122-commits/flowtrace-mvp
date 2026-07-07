@@ -1,0 +1,2 @@
+"""Checkout sample package."""
+

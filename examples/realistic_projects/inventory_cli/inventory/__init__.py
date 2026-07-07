@@ -1,0 +1,2 @@
+"""Inventory CLI sample package."""
+

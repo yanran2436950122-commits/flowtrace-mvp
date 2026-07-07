@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FlowTrace Workspace Template</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #070b10;
+        --panel: #111922;
+        --panel-soft: #172230;
+        --panel-deep: #090f16;
+        --border: #243245;
+        --border-soft: #1c2938;
+        --text: #d2dbe7;
+        --muted: #8998aa;
+        --accent: #6f9dc8;
+        --accent-soft: rgba(111, 157, 200, 0.12);
+        --danger: #c76f6f;
+        --tab: #192536;
+        --tab-active: #2a3d51;
+        --radius: 8px;
+        --gap: 8px;
+        --toolbar-h: 40px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+      }
+
+      button,
+      select {
+        font: inherit;
+      }
+
+      .workspace-shell {
+        width: 100vw;
+        height: 100vh;
+        min-width: 820px;
+        display: grid;
+        grid-template-rows: var(--toolbar-h) 1fr;
+        background: var(--bg);
+      }
+
+      .workspace-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--border-soft);
+        background: #080d13;
+      }
+
+      .toolbar-left,
+      .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .brand {
+        min-width: 210px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .layout-select,
+      .toolbar-button {
+        height: 28px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: #101923;
+        color: var(--text);
+      }
+
+      .layout-select {
+        min-width: 150px;
+        padding: 0 8px;
+      }
+
+      .toolbar-button {
+        padding: 0 10px;
+        cursor: pointer;
+      }
+
+      .toolbar-button:hover {
+        border-color: var(--accent);
+        background: #142131;
+      }
+
+      .workspace-root {
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        padding: var(--gap);
+      }
+
+      .workspace-stage {
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        gap: 6px;
+      }
+
+      .center-host,
+      .side-container,
+      .side-stack-list {
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .center-host {
+        flex: 1 1 auto;
+        position: relative;
+        display: flex;
+        min-width: 0;
+      }
+
+      .center-host > .tab-stack {
+        flex: 1 1 auto;
+        min-width: 420px;
+        min-height: 260px;
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      .workspace-stage.single-window .center-host > .tab-stack {
+        resize: both;
+        flex: 0 0 auto;
+        width: min(100%, 980px);
+        height: min(100%, 620px);
+      }
+
+      .side-container {
+        position: relative;
+        display: none;
+        flex: 0 0 var(--side-width, 340px);
+        width: var(--side-width, 340px);
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        overflow: visible;
+      }
+
+      .side-container.has-items {
+        display: block;
+      }
+
+      .side-stack-list {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        gap: 6px;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .side-container .tab-stack {
+        flex: 0 0 var(--stack-height, 260px);
+      }
+
+      .side-container .tab-stack:last-child {
+        flex-grow: 1;
+      }
+
+      .side-resizer {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 20;
+        width: 12px;
+        cursor: col-resize;
+        background: transparent;
+      }
+
+      .side-container.left .side-resizer {
+        right: -6px;
+        border-right: 1px solid rgba(111, 157, 200, 0.38);
+      }
+
+      .side-container.right .side-resizer {
+        left: -6px;
+        border-left: 1px solid rgba(111, 157, 200, 0.38);
+      }
+
+      .layout-node {
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .split-node {
+        display: flex;
+        gap: var(--gap);
+      }
+
+      .split-node.vertical {
+        flex-direction: column;
+      }
+
+      .split-child {
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .split-divider {
+        flex: 0 0 1px;
+        background: var(--border-soft);
+      }
+
+      .tab-stack {
+        position: relative;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        border: 1px solid #2f4054;
+        border-radius: 7px;
+        background: var(--panel);
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(180, 205, 230, 0.025), 0 1px 1px rgba(0, 0, 0, 0.16);
+      }
+
+      .tab-strip {
+        min-width: 0;
+        min-height: 34px;
+        display: flex;
+        align-items: end;
+        gap: 2px;
+        padding: 5px 6px 0;
+        overflow: hidden;
+        border-bottom: 1px solid #2f4054;
+        background: var(--panel);
+      }
+
+      .page-tab {
+        position: relative;
+        min-width: 118px;
+        max-width: 220px;
+        height: 29px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-bottom: 0;
+        border-radius: 6px 6px 0 0;
+        background: var(--panel);
+        color: var(--text);
+        cursor: grab;
+        user-select: none;
+      }
+
+      .page-tab.active {
+        background: var(--panel);
+      }
+
+      .page-tab.active::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        border-radius: 6px 6px 0 0;
+      }
+
+      .page-tab.dragging {
+        opacity: 0.55;
+      }
+
+      .tab-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .tab-close {
+        margin-left: auto;
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .stack-body {
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .stack-height-resizer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 16;
+        height: 8px;
+        cursor: row-resize;
+        background: linear-gradient(transparent, rgba(121, 174, 222, 0.12));
+      }
+
+      .view-panel {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        background: var(--panel);
+      }
+
+      .view-heading {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #2f4054;
+        background: var(--panel);
+      }
+
+      .view-heading strong {
+        font-size: 14px;
+      }
+
+      .view-heading span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .view-body {
+        min-width: 0;
+        min-height: 0;
+        overflow: auto;
+        padding: 14px;
+      }
+
+      .canvas-body {
+        overflow: hidden;
+        padding: 0;
+      }
+
+      .graph-canvas {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-width: 100%;
+        min-height: 100%;
+        background-color: #242424;
+        background-image:
+          linear-gradient(#303030 1px, transparent 1px),
+          linear-gradient(90deg, #303030 1px, transparent 1px),
+          linear-gradient(#1b1b1b 1px, transparent 1px),
+          linear-gradient(90deg, #1b1b1b 1px, transparent 1px);
+        background-size: 12px 12px, 12px 12px, 96px 96px, 96px 96px;
+      }
+
+      .node {
+        position: absolute;
+        width: 180px;
+        height: 58px;
+        display: grid;
+        place-content: center;
+        gap: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 7px;
+        background: linear-gradient(#3d8f82, #27675e);
+        text-align: center;
+      }
+
+      .node.error {
+        background: linear-gradient(#b94e4e, #812727);
+      }
+
+      .node small {
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      .edge {
+        position: absolute;
+        height: 2px;
+        background: var(--danger);
+        transform-origin: left center;
+        opacity: 0.78;
+      }
+
+      .watch-card,
+      .data-card,
+      .log-line {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--panel-deep);
+      }
+
+      .watch-card {
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+        border-left: 4px solid var(--danger);
+      }
+
+      .watch-card strong {
+        font-size: 15px;
+      }
+
+      .watch-card span,
+      .log-line span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .data-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+
+      .data-card {
+        min-height: 220px;
+        padding: 12px;
+      }
+
+      .data-card h3 {
+        margin: 0 0 10px;
+        font-size: 13px;
+      }
+
+      .code {
+        margin: 0;
+        min-height: 150px;
+        overflow: auto;
+        border: 1px solid var(--border-soft);
+        border-radius: 7px;
+        padding: 10px;
+        background: #0f1721;
+        color: #91d891;
+        font-family: Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+
+      .log-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .log-line {
+        padding: 10px 12px;
+      }
+
+      .drop-mask {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: none;
+        grid-template:
+          "top top top" 20%
+          "left center right" 60%
+          "bottom bottom bottom" 20% /
+          16% 68% 16%;
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .tab-stack.drag-armed .drop-mask {
+        /* 显式停靠提示暂时关闭：保留命中逻辑，但不显示大面积覆盖层。 */
+        display: none;
+      }
+
+      .drop-target {
+        display: grid;
+        place-items: center;
+        border: 1px dashed rgba(121, 174, 222, 0.58);
+        border-radius: 7px;
+        background: rgba(121, 174, 222, 0.1);
+        color: #bdd8f2;
+        font-size: 12px;
+      }
+
+      .drop-target[data-drop="left"],
+      .drop-target[data-drop="right"] {
+        align-self: center;
+        height: 60%;
+      }
+
+      .drop-target.hot {
+        border-style: solid;
+        background: rgba(121, 174, 222, 0.18);
+      }
+
+      .drop-target[data-drop="top"] { grid-area: top; }
+      .drop-target[data-drop="left"] { grid-area: left; }
+      .drop-target[data-drop="center"] { grid-area: center; }
+      .drop-target[data-drop="right"] { grid-area: right; }
+      .drop-target[data-drop="bottom"] { grid-area: bottom; }
+    </style>
+  </head>
+  <body>
+    <main class="workspace-shell">
+      <header class="workspace-toolbar">
+        <div class="toolbar-left">
+          <div class="brand">FlowTrace Workspace Template</div>
+          <select class="layout-select" data-layout-picker>
+            <option value="default">默认调试布局</option>
+            <option value="single">单窗口布局</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <button class="toolbar-button" data-action="save">保存布局</button>
+          <button class="toolbar-button" data-action="load">恢复保存</button>
+          <button class="toolbar-button" data-action="reset">重置布局</button>
+        </div>
+      </header>
+
+      <section class="workspace-root" data-layout-root></section>
+    </main>
+
+    <script>
+      const STORAGE_KEY = "flowtrace.workspace.template.v2";
+      const rootEl = document.querySelector("[data-layout-root]");
+      let stackCounter = 100;
+      let draggingViewId = "";
+      let hotDrop = null;
+      let resizeState = null;
+      let dragPointerOffsetY = 0;
+
+      const viewRegistry = {
+        run: { title: "运行视图", render: renderRunView },
+        watch: { title: "监视窗口", render: renderWatchView },
+        details: { title: "事件详情", render: renderDetailsView },
+        contract: { title: "契约对比", render: renderContractView },
+        console: { title: "运行日志", render: renderConsoleView },
+      };
+
+      const views = {
+        "view-run": { type: "run", title: "运行视图", params: { runId: "latest" } },
+        "view-watch": { type: "watch", title: "监视窗口", params: { methodId: "workflow.submit_order" } },
+        "view-details": { type: "details", title: "事件详情", params: { edgeId: "workflow->frontend" } },
+        "view-contract": { type: "contract", title: "契约对比", params: { edgeId: "workflow->frontend" } },
+        "view-console": { type: "console", title: "运行日志", params: { runId: "latest" } },
+      };
+
+      function makeStack(viewIds, active = viewIds[0], height = 260) {
+        return { type: "tabs", id: createStackId(), active, views: viewIds, height };
+      }
+
+      function makeDefaultState() {
+        return {
+          center: {
+            type: "tabs",
+            id: "stack-main",
+            active: "view-run",
+            views: ["view-run", "view-details", "view-contract"],
+          },
+          sidebars: {
+            left: { width: 320, stacks: [] },
+            right: { width: 360, stacks: [makeStack(["view-watch"], "view-watch", 300), makeStack(["view-console"], "view-console", 220)] },
+          },
+        };
+      }
+
+      function makeSingleState() {
+        return {
+          center: {
+            type: "tabs",
+            id: "stack-main",
+            active: "view-run",
+            views: Object.keys(views),
+          },
+          sidebars: {
+            left: { width: 320, stacks: [] },
+            right: { width: 360, stacks: [] },
+          },
+        };
+      }
+
+      let state = makeDefaultState();
+
+      function clone(value) {
+        return JSON.parse(JSON.stringify(value));
+      }
+
+      function createStackId() {
+        stackCounter += 1;
+        return `stack-${stackCounter}`;
+      }
+
+      function normalizeNode(node) {
+        if (!node) return null;
+        if (node.type === "tabs") {
+          node.views = node.views.filter((viewId, index) => views[viewId] && node.views.indexOf(viewId) === index);
+          if (node.views.length === 0) return null;
+          if (!node.views.includes(node.active)) node.active = node.views[0];
+          return node;
+        }
+        node.first = normalizeNode(node.first);
+        node.second = normalizeNode(node.second);
+        if (!node.first) return node.second;
+        if (!node.second) return node.first;
+        return node;
+      }
+
+      function normalizeState() {
+        state.center = normalizeNode(state.center) || makeSingleState().center;
+        for (const side of ["left", "right"]) {
+          state.sidebars[side].stacks = state.sidebars[side].stacks.map(normalizeNode).filter(Boolean);
+          state.sidebars[side].width = clamp(state.sidebars[side].width || 340, 240, 620);
+        }
+      }
+
+      function renderWorkspace() {
+        normalizeState();
+        const stage = document.createElement("section");
+        stage.className = "workspace-stage";
+        if (isSingleWindowState()) {
+          stage.classList.add("single-window");
+        }
+        stage.append(renderSidebar("left"), renderCenter(), renderSidebar("right"));
+        rootEl.replaceChildren(stage);
+      }
+
+      function isSingleWindowState() {
+        const noSidebars = state.sidebars.left.stacks.length === 0 && state.sidebars.right.stacks.length === 0;
+        return noSidebars && state.center?.type === "tabs";
+      }
+
+      function renderCenter() {
+        const host = document.createElement("section");
+        host.className = "center-host";
+        host.appendChild(renderLayoutNode(state.center, { area: "center" }));
+        return host;
+      }
+
+      function renderSidebar(side) {
+        const data = state.sidebars[side];
+        const shell = document.createElement("aside");
+        shell.className = `side-container ${side}${data.stacks.length ? " has-items" : ""}`;
+        shell.dataset.side = side;
+        shell.style.setProperty("--side-width", `${data.width}px`);
+        shell.innerHTML = `
+          <div class="side-stack-list"></div>
+          <div class="side-resizer" data-side-resizer="${side}"></div>`;
+        const list = shell.querySelector(".side-stack-list");
+        for (const stack of data.stacks) {
+          list.appendChild(renderTabStack(stack, { area: "side", side }));
+        }
+        return shell;
+      }
+
+      function renderLayoutNode(node, context) {
+        if (node.type === "split") return renderSplitNode(node, context);
+        return renderTabStack(node, context);
+      }
+
+      function renderSplitNode(node, context) {
+        const wrapper = document.createElement("section");
+        wrapper.className = `layout-node split-node ${node.direction}`;
+        const first = document.createElement("div");
+        const second = document.createElement("div");
+        const divider = document.createElement("div");
+        first.className = "split-child";
+        second.className = "split-child";
+        divider.className = "split-divider";
+        first.style.flex = `${node.ratio} 1 0`;
+        second.style.flex = `${1 - node.ratio} 1 0`;
+        first.appendChild(renderLayoutNode(node.first, context));
+        second.appendChild(renderLayoutNode(node.second, context));
+        wrapper.append(first, divider, second);
+        return wrapper;
+      }
+
+      function renderTabStack(node, context) {
+        const stack = document.createElement("section");
+        stack.className = "layout-node tab-stack";
+        stack.dataset.stackId = node.id;
+        stack.dataset.area = context.area;
+        if (context.side) stack.dataset.side = context.side;
+        if (context.area === "side") stack.style.setProperty("--stack-height", `${node.height || 260}px`);
+
+        const strip = document.createElement("nav");
+        strip.className = "tab-strip";
+        strip.dataset.stackId = node.id;
+
+        for (const viewId of node.views) {
+          strip.appendChild(renderTab(viewId, node.active === viewId));
+        }
+
+        const body = document.createElement("div");
+        body.className = "stack-body";
+        body.appendChild(renderView(node.active));
+
+        const mask = document.createElement("div");
+        mask.className = "drop-mask";
+        for (const area of ["top", "left", "center", "right", "bottom"]) {
+          const target = document.createElement("div");
+          target.className = "drop-target";
+          target.dataset.drop = area;
+          target.textContent = area === "center" ? "合并标签" : `停靠${areaLabel(area)}`;
+          mask.appendChild(target);
+        }
+
+        stack.append(strip, body, mask);
+        if (context.area === "side") {
+          const resizer = document.createElement("div");
+          resizer.className = "stack-height-resizer";
+          resizer.dataset.stackHeightResizer = node.id;
+          stack.appendChild(resizer);
+        }
+        return stack;
+      }
+
+      function renderTab(viewId, active) {
+        const view = views[viewId];
+        const meta = viewRegistry[view.type];
+        const tab = document.createElement("div");
+        tab.className = `page-tab${active ? " active" : ""}`;
+        tab.draggable = true;
+        tab.dataset.viewId = viewId;
+        tab.innerHTML = `<span class="tab-title">${view.title || meta.title}</span><button class="tab-close" title="关闭">×</button>`;
+        return tab;
+      }
+
+      function renderView(viewId) {
+        const view = views[viewId];
+        return viewRegistry[view.type].render(view);
+      }
+
+      function panelShell(title, subtitle, options = {}) {
+        const panel = document.createElement("article");
+        panel.className = `view-panel${options.panelClass ? ` ${options.panelClass}` : ""}`;
+        panel.innerHTML = `
+          <header class="view-heading">
+            <strong>${title}</strong>
+            <span>${subtitle}</span>
+          </header>
+          <div class="view-body${options.bodyClass ? ` ${options.bodyClass}` : ""}"></div>`;
+        return panel;
+      }
+
+      function renderRunView() {
+        const panel = panelShell("运行视图", "标签旁边合并；上方/下方停靠；左右只在边框中段触发。", {
+          panelClass: "canvas-view",
+          bodyClass: "canvas-body",
+        });
+        panel.querySelector(".view-body").innerHTML = `
+          <div class="graph-canvas">
+            <div class="node error" style="left: 110px; top: 110px"><strong>service</strong><small>调用 1 / 未调用 0</small></div>
+            <div class="node" style="left: 390px; top: 250px"><strong>workflow</strong><small>调用 1 / 未调用 0</small></div>
+            <div class="node" style="left: 700px; top: 260px"><strong>frontend</strong><small>调用 1 / 未调用 0</small></div>
+            <div class="node error" style="left: 760px; top: 88px"><strong>api</strong><small>调用 1 / 未调用 0</small></div>
+            <div class="edge" style="left: 290px; top: 140px; width: 500px; transform: rotate(-5deg)"></div>
+          </div>`;
+        return panel;
+      }
+
+      function renderWatchView() {
+        const panel = panelShell("监视窗口", "侧栏是一整块容器，容器宽度可拖拽。");
+        panel.querySelector(".view-body").innerHTML = `
+          <article class="watch-card">
+            <strong>watch workflow.submit_order</strong>
+            <span>运行异常 · 5.285 毫秒 · 有输入快照</span>
+            <pre class="code">{
+  "input": {
+    "form": {
+      "amount": "42.50",
+      "coupon_id": "WELCOME",
+      "permissions": ["read", "write"],
+      "role": "admin",
+      "user_id": 123
+    }
+  },
+  "output": null,
+  "error": "ValueError: user_id is required"
+}</pre>
+          </article>`;
+        return panel;
+      }
+
+      function renderDetailsView() {
+        const panel = panelShell("事件详情", "同一视图实例只存在一份，被移动时会从原位置移除。");
+        panel.querySelector(".view-body").innerHTML = `
+          <div class="data-grid">
+            <section class="data-card">
+              <h3>上级方法输出</h3>
+              <pre class="code">{
+  "amount": "42.50",
+  "role": "admin",
+  "permissions": ["read", "write"]
+}</pre>
+            </section>
+            <section class="data-card">
+              <h3>下级方法输入</h3>
+              <pre class="code">{
+  "amount": "42.50",
+  "role": "admin",
+  "permissions": ["read", "write"]
+}</pre>
+            </section>
+          </div>`;
+        return panel;
+      }
+
+      function renderContractView() {
+        const panel = panelShell("契约对比", "页面在侧栏内宽度跟随容器，高度可拖拽页面底部调整。");
+        panel.querySelector(".view-body").innerHTML = `
+          <section class="data-card">
+            <h3>契约变化</h3>
+            <pre class="code">{
+  "added_fields": ["amount", "coupon_id"],
+  "removed_fields": ["payload"],
+  "status": "changed"
+}</pre>
+          </section>`;
+        return panel;
+      }
+
+      function renderConsoleView() {
+        const panel = panelShell("运行日志", "布局可保存、恢复、重置。");
+        panel.querySelector(".view-body").innerHTML = `
+          <div class="log-list">
+            <div class="log-line"><strong>INFO</strong> <span>layout tree rendered</span></div>
+            <div class="log-line"><strong>WARN</strong> <span>handoff diff detected: payload -> form</span></div>
+            <div class="log-line"><strong>ERROR</strong> <span>ValueError: user_id is required</span></div>
+          </div>`;
+        return panel;
+      }
+
+      function areaLabel(area) {
+        return { top: "上方", bottom: "下方", left: "左侧", right: "右侧", center: "标签区" }[area] || area;
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function findStackInNode(node, stackId) {
+        if (!node) return null;
+        if (node.type === "tabs" && node.id === stackId) return node;
+        if (node.type === "split") return findStackInNode(node.first, stackId) || findStackInNode(node.second, stackId);
+        return null;
+      }
+
+      function findStack(stackId) {
+        const center = findStackInNode(state.center, stackId);
+        if (center) return { stack: center, area: "center" };
+        for (const side of ["left", "right"]) {
+          const index = state.sidebars[side].stacks.findIndex((stack) => stack.id === stackId);
+          if (index >= 0) return { stack: state.sidebars[side].stacks[index], area: "side", side, index };
+        }
+        return null;
+      }
+
+      function normalizeNodeAfterRemove(node) {
+        if (!node) return null;
+        if (node.type === "tabs") {
+          node.views = node.views.filter((viewId, index) => views[viewId] && node.views.indexOf(viewId) === index);
+          if (node.views.length === 0) return null;
+          if (!node.views.includes(node.active)) node.active = node.views[0];
+          return node;
+        }
+        node.first = normalizeNodeAfterRemove(node.first);
+        node.second = normalizeNodeAfterRemove(node.second);
+        if (!node.first) return node.second;
+        if (!node.second) return node.first;
+        return node;
+      }
+
+      function removeViewFromNode(node, viewId) {
+        if (!node) return null;
+        if (node.type === "tabs") {
+          node.views = node.views.filter((id) => id !== viewId);
+          if (node.active === viewId) node.active = node.views[0] || "";
+          return normalizeNodeAfterRemove(node);
+        }
+        node.first = removeViewFromNode(node.first, viewId);
+        node.second = removeViewFromNode(node.second, viewId);
+        return normalizeNodeAfterRemove(node);
+      }
+
+      function removeView(viewId) {
+        state.center = removeViewFromNode(state.center, viewId) || makeSingleState().center;
+        for (const side of ["left", "right"]) {
+          state.sidebars[side].stacks = state.sidebars[side].stacks
+            .map((stack) => removeViewFromNode(stack, viewId))
+            .filter(Boolean);
+        }
+      }
+
+      function replaceStack(node, stackId, replacement) {
+        if (!node) return null;
+        if (node.type === "tabs" && node.id === stackId) return replacement;
+        if (node.type === "split") {
+          node.first = replaceStack(node.first, stackId, replacement);
+          node.second = replaceStack(node.second, stackId, replacement);
+        }
+        return node;
+      }
+
+      function moveToStack(viewId, stackId) {
+        const targetInfo = findStack(stackId);
+        if (!targetInfo) return;
+        if (targetInfo.stack.views.includes(viewId)) {
+          targetInfo.stack.active = viewId;
+          renderWorkspace();
+          return;
+        }
+        removeView(viewId);
+        const nextTarget = findStack(stackId);
+        if (!nextTarget) return;
+        nextTarget.stack.views.push(viewId);
+        nextTarget.stack.active = viewId;
+        renderWorkspace();
+      }
+
+      function splitCenterStack(viewId, stackId, side) {
+        const targetInfo = findStack(stackId);
+        if (!targetInfo || targetInfo.area !== "center") return;
+        const targetClone = clone(targetInfo.stack);
+        targetClone.views = targetClone.views.filter((id) => id !== viewId);
+        if (!targetClone.views.includes(targetClone.active)) targetClone.active = targetClone.views[0] || "";
+        const newStack = { type: "tabs", id: createStackId(), active: viewId, views: [viewId] };
+        const direction = side === "top" || side === "bottom" ? "vertical" : "horizontal";
+        const replacement = {
+          type: "split",
+          direction,
+          ratio: 0.5,
+          first: side === "top" || side === "left" ? newStack : targetClone,
+          second: side === "top" || side === "left" ? targetClone : newStack,
+        };
+        removeView(viewId);
+        state.center = replaceStack(state.center, stackId, replacement);
+        renderWorkspace();
+      }
+
+      function moveToSidebar(viewId, side) {
+        removeView(viewId);
+        state.sidebars[side].stacks.push(makeStack([viewId], viewId, 280));
+        renderWorkspace();
+      }
+
+      function dockInSidebar(viewId, stackId, area) {
+        const targetInfo = findStack(stackId);
+        if (!targetInfo || targetInfo.area !== "side") return;
+        if (area === "center") {
+          moveToStack(viewId, stackId);
+          return;
+        }
+        removeView(viewId);
+        const stack = makeStack([viewId], viewId, 240);
+        const insertAt = area === "top" ? targetInfo.index : targetInfo.index + 1;
+        state.sidebars[targetInfo.side].stacks.splice(insertAt, 0, stack);
+        renderWorkspace();
+      }
+
+      function closeView(viewId) {
+        removeView(viewId);
+        renderWorkspace();
+      }
+
+      function saveLayout() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch {
+          console.warn("当前环境无法写入 localStorage。");
+        }
+      }
+
+      function loadLayout() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "");
+          if (saved) {
+            state = saved;
+            renderWorkspace();
+          }
+        } catch {
+          console.warn("未找到可恢复布局。");
+        }
+      }
+
+      function resetLayout(kind = "default") {
+        state = kind === "single" ? makeSingleState() : makeDefaultState();
+        renderWorkspace();
+      }
+
+      function getDropArea(stackEl, event) {
+        const rect = stackEl.getBoundingClientRect();
+        const strip = stackEl.querySelector(".tab-strip").getBoundingClientRect();
+        const px = event.clientX - rect.left;
+        const x = px / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        const draggedTabCenterY = event.clientY - dragPointerOffsetY + 14;
+
+        const tabLikeTarget = event.target.closest(".page-tab") || event.target.closest(".tab-strip");
+        if (tabLikeTarget && Math.abs(draggedTabCenterY - (strip.top + strip.height / 2)) <= strip.height * 0.7) return "center";
+
+        if (draggedTabCenterY < strip.top) return "top";
+        if (y > 0.84) return "bottom";
+
+        const edgeWidth = 12;
+        if (y >= 0.2 && y <= 0.8 && px <= edgeWidth) return "left";
+        if (y >= 0.2 && y <= 0.8 && px >= rect.width - edgeWidth) return "right";
+        return "center";
+      }
+
+      function handleDrop(viewId, stackId, area) {
+        const targetInfo = findStack(stackId);
+        if (!targetInfo) return;
+        if (area === "center") {
+          moveToStack(viewId, stackId);
+          return;
+        }
+        if (targetInfo.area === "side") {
+          if (area === "top" || area === "bottom") {
+            dockInSidebar(viewId, stackId, area);
+          } else {
+            moveToSidebar(viewId, area);
+          }
+          return;
+        }
+        if (area === "left" || area === "right") {
+          moveToSidebar(viewId, area);
+          return;
+        }
+        splitCenterStack(viewId, stackId, area);
+      }
+
+      function getStageEdgeDrop(event) {
+        const stage = rootEl.querySelector(".workspace-stage");
+        if (!stage) return "";
+        const rect = stage.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const edgeWidth = 16;
+        const inMiddle = y >= rect.height * 0.2 && y <= rect.height * 0.8;
+        if (!inMiddle) return "";
+        if (x <= edgeWidth) return "left";
+        if (x >= rect.width - edgeWidth) return "right";
+        return "";
+      }
+
+      function startSideResize(side, startX) {
+        const container = document.querySelector(`[data-side="${side}"]`);
+        const rect = container.getBoundingClientRect();
+        resizeState = { type: "side", side, startX, left: rect.left, right: rect.right };
+      }
+
+      function startHeightResize(stackId, startY) {
+        const info = findStack(stackId);
+        if (!info || info.area !== "side") return;
+        resizeState = { type: "height", side: info.side, index: info.index, startY, startHeight: info.stack.height || 260 };
+      }
+
+      document.addEventListener("click", (event) => {
+        const close = event.target.closest(".tab-close");
+        if (close) {
+          closeView(close.closest("[data-view-id]").dataset.viewId);
+          return;
+        }
+
+        const tab = event.target.closest("[data-view-id]");
+        if (tab) {
+          const info = findStack(tab.closest("[data-stack-id]").dataset.stackId);
+          info.stack.active = tab.dataset.viewId;
+          renderWorkspace();
+          return;
+        }
+
+        const action = event.target.closest("[data-action]")?.dataset.action;
+        if (action === "save") saveLayout();
+        if (action === "load") loadLayout();
+        if (action === "reset") resetLayout(document.querySelector("[data-layout-picker]").value);
+      });
+
+      document.querySelector("[data-layout-picker]").addEventListener("change", (event) => resetLayout(event.target.value));
+
+      document.addEventListener("mousedown", (event) => {
+        const sideGrip = event.target.closest("[data-side-resizer]");
+        if (sideGrip) {
+          startSideResize(sideGrip.dataset.sideResizer, event.clientX);
+          event.preventDefault();
+          return;
+        }
+        const heightGrip = event.target.closest("[data-stack-height-resizer]");
+        if (heightGrip) {
+          startHeightResize(heightGrip.dataset.stackHeightResizer, event.clientY);
+          event.preventDefault();
+        }
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        if (!resizeState) return;
+        if (resizeState.type === "side") {
+          const nextWidth = resizeState.side === "left"
+            ? event.clientX - resizeState.left
+            : resizeState.right - event.clientX;
+          state.sidebars[resizeState.side].width = clamp(nextWidth, 240, 620);
+          document.querySelector(`[data-side="${resizeState.side}"]`)?.style.setProperty("--side-width", `${state.sidebars[resizeState.side].width}px`);
+        }
+        if (resizeState.type === "height") {
+          const delta = event.clientY - resizeState.startY;
+          const nextHeight = clamp(resizeState.startHeight + delta, 150, 680);
+          const stack = state.sidebars[resizeState.side].stacks[resizeState.index];
+          stack.height = nextHeight;
+          document.querySelector(`[data-stack-id="${stack.id}"]`)?.style.setProperty("--stack-height", `${nextHeight}px`);
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        resizeState = null;
+      });
+
+      document.addEventListener("dragstart", (event) => {
+        const tab = event.target.closest("[data-view-id]");
+        if (!tab) return;
+        draggingViewId = tab.dataset.viewId;
+        dragPointerOffsetY = event.clientY - tab.getBoundingClientRect().top;
+        tab.classList.add("dragging");
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", draggingViewId);
+        for (const stack of document.querySelectorAll(".tab-stack")) stack.classList.add("drag-armed");
+      });
+
+      document.addEventListener("dragover", (event) => {
+        if (!draggingViewId) return;
+        const stack = event.target.closest(".tab-stack");
+        const sideEdge = getStageEdgeDrop(event);
+        if (!stack && !sideEdge) return;
+        event.preventDefault();
+        if (sideEdge) {
+          hotDrop = { stackId: "", area: sideEdge, stageEdge: true };
+          return;
+        }
+        const area = getDropArea(stack, event);
+        for (const target of document.querySelectorAll(".drop-target.hot")) target.classList.remove("hot");
+        stack.querySelector(`[data-drop="${area}"]`)?.classList.add("hot");
+        hotDrop = { stackId: stack.dataset.stackId, area, stageEdge: false };
+      });
+
+      document.addEventListener("drop", (event) => {
+        if (!draggingViewId || !hotDrop) return;
+        event.preventDefault();
+        if (hotDrop.stageEdge) {
+          moveToSidebar(draggingViewId, hotDrop.area);
+        } else {
+          handleDrop(draggingViewId, hotDrop.stackId, hotDrop.area);
+        }
+        draggingViewId = "";
+        hotDrop = null;
+        for (const stack of document.querySelectorAll(".tab-stack")) stack.classList.remove("drag-armed");
+      });
+
+      document.addEventListener("dragend", () => {
+        draggingViewId = "";
+        dragPointerOffsetY = 0;
+        hotDrop = null;
+        for (const stack of document.querySelectorAll(".tab-stack")) stack.classList.remove("drag-armed");
+        for (const node of document.querySelectorAll(".dragging, .hot")) node.classList.remove("dragging", "hot");
+      });
+
+      renderWorkspace();
+    </script>
+  </body>
+</html>
